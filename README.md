@@ -15,3 +15,11 @@ Xiaoming Chen<sup>4</sup>, Yuan Xie<sup>2, 5</sup>, Yu Cao<sup>6</sup>, X. Sharo
 MNSIM_Python version 1.0 is still a beta version. If you have any questions and suggestions about MNSIM_Python please contact us via e-mail. We hope that MNSIM_Python can be helpful to your research work, and sincerely invite every PIM researcher to add your ideas to MNSIM_Python to enlarge its function.
 
 For more information about MNSIM_Python, please refer to the MNSIM_manual.pdf
+
+#Our work
+The original project only supports the image classification function. On this basis, we have added the image classification function (the performance calculated by this function is not accurate).
+
+We found that the author's quantization strategy is not suitable for image classification, so we chose other strategies. (from identity relu to clipped relu)
+
+#How to train target detection network
+- python3 synthesize.py -g 0 -d voc2007 -n yolo -t detection_train -m train 
