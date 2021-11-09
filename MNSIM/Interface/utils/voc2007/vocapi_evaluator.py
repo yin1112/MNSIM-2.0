@@ -14,7 +14,6 @@ import os
 import time
 import numpy as np
 import pickle
-
 if sys.version_info[0] == 2:
     import xml.etree.cElementTree as ET
 else:
@@ -38,7 +37,8 @@ class VOCAPIEvaluator():
         self.annopath = os.path.join(data_root, 'VOC2007', 'Annotations', '%s.xml')
         self.imgpath = os.path.join(data_root, 'VOC2007', 'JPEGImages', '%s.jpg')
         self.imgsetpath = os.path.join(data_root, 'VOC2007', 'ImageSets', 'Main', set_type+'.txt')
-        self.output_dir = self.get_output_dir('voc_eval/', self.set_type)
+        dir = data_root + '/voc_eval/'
+        self.output_dir = self.get_output_dir(dir, self.set_type)
 
         # dataset
         self.dataset = dataset
@@ -137,6 +137,7 @@ class VOCAPIEvaluator():
             if self.display:
                 print('Writing {:s} VOC results file'.format(cls))
             filename = self.get_voc_results_file_template(cls)
+            # print(filename)
             with open(filename, 'wt') as f:
                 for im_ind, index in enumerate(self.dataset.ids):
                     dets = all_boxes[cls_ind][im_ind]

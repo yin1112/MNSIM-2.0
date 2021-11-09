@@ -11,7 +11,7 @@ from tensorboardX import SummaryWriter
 from model.yolo import myNet
 from config import cfg
 from utils.voc2007.vocapi_evaluator import VOCAPIEvaluator
-from datatool.voc2007.voc0712 import BaseTransform
+from datatool.voc2007.voc0712 import VOC_CLASSES, BaseTransform
 tensorboard_writer = None
 
 
@@ -27,7 +27,7 @@ def train_net(net, train_loader, test_loader, device, prefix):
                             img_size=cfg.voc.VAL_SIZE,
                             device=device,
                             transform=BaseTransform(cfg.voc.VAL_SIZE),
-                            labelmap=cfg.voc.root
+                            labelmap=VOC_CLASSES
                             )
     # loss and optimizer
     # scale's lr and weight_decay set to 0
@@ -58,8 +58,9 @@ def train_net(net, train_loader, test_loader, device, prefix):
             print(f'epoch {epoch+1:3d}, {i:3d}|{len(train_loader):3d}, lr: {lr:.6f}, Loss: obj: {conf_loss:.6f}\
  , cls_loss: {cls_loss:.6f}, txtytwth_loss: {txtytwth_loss:.6f}, loss: {total_loss.item():2.6f}', end = '\r')
             tensorboard_writer.add_scalars('train_loss', {'train_loss': total_loss.item()}, epoch * len(train_loader) + i)
-        eval_net(model,evaluator)
-        torch.save(net.state_dict(), os.path.join(os.path.dirname(__file__), f'zoo/{prefix}_params.pth'))
+        if (epoch+1) %10 ==0:
+            eval_net(model,evaluator)
+            torch.save(net.state_dict(), os.path.join(os.path.dirname(__file__), f'../zoo/{prefix}_params.pth'))
 
 def eval_net(model, evaluator ):
     # set net on gpu

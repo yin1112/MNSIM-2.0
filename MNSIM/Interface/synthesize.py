@@ -1,14 +1,20 @@
 #-*-coding:utf-8-*-
+import os
+import sys
+sys.path.append(os.path.dirname(__file__))
+sys.path.append(os.path.join(os.path.dirname(__file__) , "../.."))
+
 import argparse
 from importlib import import_module
 
 import torch
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-g', '--gpu', help = 'select gpu')
 parser.add_argument('-d', '--dataset', help = 'select dataset')
 parser.add_argument('-n', '--net', help = 'select net')
-parser.add_argument('-t', '--train', help = 'select train')
+parser.add_argument('-t', '--train', help = 'select train.py ,')
 parser.add_argument('-p', '--prefix', help = 'select prefix')
 parser.add_argument('-m', '--mode', help = 'select mode', choices = ['train', 'test'])
 parser.add_argument('-w', '--weight', help = 'weight file')
@@ -28,20 +34,22 @@ else:
 
 print(f'args is {args}')
 # dataloader
-dataset_module = import_module(f'MNSIM.Interface.{args.dataset}')
+dataset_module = import_module(f'datatool.{args.dataset}')
 train_loader, test_loader = dataset_module.get_dataloader()
 # net
-net_module = import_module('MNSIM.Interface.network')
+net_module = import_module('network')
 if args.dataset.endswith('cifar10'):
     num_classes = 10
 elif args.dataset.endswith('cifar100'):
     num_classes = 100
+elif args.dataset.endswith('voc2007'):
+    num_classes = 20
 else:
     assert 0, f'unknown dataset'
 
 net = net_module.get_net(cate = args.net, num_classes = num_classes)
 # train
-train_module = import_module(f'MNSIM.Interface.{args.train}')
+train_module = import_module(f'train_module.{args.train}')
 device = torch.device(f'cuda:{args.gpu}' if torch.cuda.is_available() else 'cpu')
 print(f'run on device {device}')
 # weights

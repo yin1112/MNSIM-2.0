@@ -16,7 +16,7 @@ cfg.voc = edict()
 cfg.voc.TRAIN_SIZE = [416, 416]
 cfg.voc.VAL_SIZE = [416, 416]
 cfg.voc.num_classes = 20
-cfg.voc.root = this_path + "/data/voc2007/VOCdevkit"
+cfg.voc.root = this_path + "/data/voc2007/VOCdevkit/"
 # training parameters
 cfg.train = edict()
 cfg.train.MOMENTUM = 0.9

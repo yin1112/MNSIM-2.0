@@ -24,29 +24,41 @@ class QuantizeFunction(Function):
         global last_weight_bit
         global last_activation_bit
         # last_value change only when training
+        ctx.input = input
         if mode == 'weight':
-            last_weight_bit = qbit
-            scale = torch.max(torch.abs(input)).item()
+            last_weight_bit = qbit   
+            ctx.fmin = torch.min(input).item()
+            ctx.fmax = torch.max(input).item()
         elif mode == 'activation':
+
+            
             last_activation_bit = qbit
+            # input = input.permute(1,0,2,3)   
+            ratio = 0.707
+            ctx.fmax = last_value[0]
+            ctx.fmin = last_value[1]
             if training:
-                ratio = 0.707
-                tmp = last_value.item()
-                if tmp <= 0:
-                    tmp = 3 * torch.std(input).item() + torch.abs(torch.mean(input)).item()
-                else:
-                    # tmp = ratio * tmp + (1 - ratio) * torch.max(torch.abs(input)).item()
-                    tmp = ratio * tmp + (1 - ratio) * \
-                        (3 * torch.std(input).item() + torch.abs(torch.mean(input)).item())
-                last_value.data[0] = tmp
-            scale = last_value.data[0]
+
+                if ctx.fmax <0:
+                    ctx.fmax = 3 * torch.std(input).item() + torch.mean(input)
+                    ctx.fmin = -3 * torch.std(input).item() + torch.mean(input)
+                else:  
+                    ctx.fmax = ratio * ctx.fmax + (1 - ratio) * \
+                        (3 * torch.std(input).item() + torch.mean(input).item())
+                    ctx.fmin = ratio * ctx.fmin + (1 - ratio) * \
+                        (-3 * torch.std(input).item() + torch.mean(input).item())
+            last_value[0] = ctx.fmax 
+            last_value[1] = ctx.fmin
         else:
             assert 0, f'not support {mode}'
-        # transfer
         thres = 2 ** (qbit - 1) - 1
-        output = input / scale
+        mid = (ctx.fmax+ctx.fmin)/2
+        scale = ctx.fmax - mid
+        output = (ctx.input - mid)/scale
         output = torch.clamp(torch.round(output * thres), 0 - thres, thres - 0)
-        output = output * scale / thres
+        
+        output = output/thres * scale +mid
+
         if mode == 'weight':
             last_weight_scale = scale / thres
         elif mode == 'activation':
@@ -56,6 +68,9 @@ class QuantizeFunction(Function):
         return output
     @staticmethod
     def backward(ctx, grad_output):
+        mask = torch.logical_and(ctx.input>=ctx.fmin , ctx.input<=ctx.fmax)
+        zeros = torch.zeros_like(grad_output)
+        grad_output = torch.where(mask , grad_output , zeros)
         return grad_output, None, None, None, None
 Quantize = QuantizeFunction.apply
 
@@ -113,7 +128,7 @@ class QuantizeLayer(nn.Module):
         else:
             assert 0, f'not support {self.layer_config["type"]}'
         # self.last_value = nn.Parameter(torch.ones(1))
-        self.register_buffer('last_value', (-1) * torch.ones(1))
+        self.register_buffer('last_value', (-1) * torch.ones(2))
         # self.last_value[0] = 1
         # self.bit_scale_list = nn.Parameter(torch.FloatTensor([[9,1],[9,1],[9,1]]))
         self.register_buffer('bit_scale_list', torch.FloatTensor([
@@ -383,7 +398,7 @@ class StraightLayer(nn.Module):
         else:
             assert 0, f'not support {self.layer_config["type"]}'
         # self.last_value = nn.Parameter(torch.ones(1))
-        self.register_buffer('last_value', torch.ones(1))
+        self.register_buffer('last_value', torch.ones(2))
         # self.last_value[0] = 1
         self.layer_info = None
     def structure_forward(self, input):

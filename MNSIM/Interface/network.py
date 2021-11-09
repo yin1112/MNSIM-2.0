@@ -171,7 +171,7 @@ def get_net(hardware_config = None, cate = 'lenet', num_classes = 10):
     quantize_config_list = []
     input_index_list = []
     # layer by layer
-    assert cate in ['lenet', 'vgg16', 'vgg8', 'alexnet', 'resnet18']
+    assert cate in ['lenet', 'vgg16', 'vgg8', 'alexnet', 'resnet18' , 'yolo']
     if cate.startswith('lenet'):
         layer_config_list.append({'type': 'conv', 'in_channels': 3, 'out_channels': 6, 'kernel_size': 5})
         layer_config_list.append({'type': 'relu'})
@@ -326,6 +326,98 @@ def get_net(hardware_config = None, cate = 'lenet', num_classes = 10):
         layer_config_list.append({'type': 'dropout'})
         layer_config_list.append({'type': 'relu'})
         layer_config_list.append({'type': 'fc', 'in_features': 512, 'out_features': num_classes})
+    elif cate.startswith('yolo'):
+
+        layer_config_list.append({'type': 'conv', 'in_channels': 3, 'out_channels': 64, 'kernel_size': 7, 'padding': 3, 'stride': 2})
+        layer_config_list.append({'type': 'relu'})
+        layer_config_list.append({'type': 'pooling', 'mode': 'MAX', 'kernel_size': 3, 'stride': 2 , 'padding' : 1})
+        # block 1
+        layer_config_list.append({'type': 'conv', 'in_channels': 64, 'out_channels': 64, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'relu'})
+        layer_config_list.append({'type': 'conv', 'in_channels': 64, 'out_channels': 64, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'element_sum', 'input_index': [-1, -4]})
+        layer_config_list.append({'type': 'relu'})
+        # block 2
+        layer_config_list.append({'type': 'conv', 'in_channels': 64, 'out_channels': 64, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'relu'})
+        layer_config_list.append({'type': 'conv', 'in_channels': 64, 'out_channels': 64, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'element_sum', 'input_index': [-1, -4]})
+        layer_config_list.append({'type': 'relu'})
+        # block 3
+        layer_config_list.append({'type': 'conv', 'in_channels': 64, 'out_channels': 128, 'kernel_size': 3, 'padding': 1, 'stride': 2})
+        layer_config_list.append({'type': 'relu'})
+        layer_config_list.append({'type': 'conv', 'in_channels': 128, 'out_channels': 128, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'conv', 'in_channels': 64, 'out_channels': 128, 'kernel_size': 3, 'padding': 1, 'stride': 2, 'input_index': [-4]})
+        layer_config_list.append({'type': 'element_sum', 'input_index': [-1, -2]})
+        layer_config_list.append({'type': 'relu'})
+        # block 4
+        layer_config_list.append({'type': 'conv', 'in_channels': 128, 'out_channels': 128, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'relu'})
+        layer_config_list.append({'type': 'conv', 'in_channels': 128, 'out_channels': 128, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'element_sum', 'input_index': [-1, -4]})
+        layer_config_list.append({'type': 'relu'})
+        # block 5
+        layer_config_list.append({'type': 'conv', 'in_channels': 128, 'out_channels': 256, 'kernel_size': 3, 'padding': 1, 'stride': 2})
+        layer_config_list.append({'type': 'relu'})
+        layer_config_list.append({'type': 'conv', 'in_channels': 256, 'out_channels': 256, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'conv', 'in_channels': 128, 'out_channels': 256, 'kernel_size': 3, 'padding': 1, 'stride': 2, 'input_index': [-4]})
+        layer_config_list.append({'type': 'element_sum', 'input_index': [-1, -2]})
+        layer_config_list.append({'type': 'relu'})
+        # block 6
+        layer_config_list.append({'type': 'conv', 'in_channels': 256, 'out_channels': 256, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'relu'})
+        layer_config_list.append({'type': 'conv', 'in_channels': 256, 'out_channels': 256, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'element_sum', 'input_index': [-1, -4]})
+        layer_config_list.append({'type': 'relu'})
+        # block 7
+        layer_config_list.append({'type': 'conv', 'in_channels': 256, 'out_channels': 512, 'kernel_size': 3, 'padding': 1, 'stride': 2})
+        layer_config_list.append({'type': 'relu'})
+        layer_config_list.append({'type': 'conv', 'in_channels': 512, 'out_channels': 512, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'conv', 'in_channels': 256, 'out_channels': 512, 'kernel_size': 3, 'padding': 1, 'stride': 2, 'input_index': [-4]})
+        layer_config_list.append({'type': 'element_sum', 'input_index': [-1, -2]})
+        layer_config_list.append({'type': 'relu'})
+        # block 8
+        layer_config_list.append({'type': 'conv', 'in_channels': 512, 'out_channels': 512, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'relu'})
+        layer_config_list.append({'type': 'conv', 'in_channels': 512, 'out_channels': 512, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'element_sum', 'input_index': [-1, -4]})
+        layer_config_list.append({'type': 'relu'})
+
+        ##cv1
+        layer_config_list.append({'type': 'conv', 'in_channels': 512, 'out_channels': 256, 'kernel_size': 1, 'stride': 1})
+        layer_config_list.append({'type': 'relu'})
+        ##m
+        layer_config_list.append({'type': 'conv', 'in_channels': 256, 'out_channels': 256, 'kernel_size': 1, 'stride': 1})
+        layer_config_list.append({'type': 'relu'})
+
+        layer_config_list.append({'type': 'conv', 'in_channels': 256, 'out_channels': 256, 'kernel_size': 1, 'stride': 1})
+        layer_config_list.append({'type': 'relu'})
+
+        layer_config_list.append({'type': 'conv', 'in_channels': 256, 'out_channels': 256, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'relu'})
+
+        layer_config_list.append({'type': 'element_sum', 'input_index': [-1, -3]})
+        layer_config_list.append({'type': 'relu'}) 
+
+
+        layer_config_list.append({'type': 'conv', 'in_channels': 256, 'out_channels': 256, 'kernel_size': 1, 'stride': 1})
+        layer_config_list.append({'type': 'relu'})
+
+        layer_config_list.append({'type': 'conv', 'in_channels': 256, 'out_channels': 256, 'kernel_size': 3, 'padding': 1, 'stride': 1})
+        layer_config_list.append({'type': 'relu'})
+
+        layer_config_list.append({'type': 'element_sum', 'input_index': [-1, -3]})
+        layer_config_list.append({'type': 'relu'}) 
+
+        ##cv3
+        layer_config_list.append({'type': 'conv', 'in_channels': 256, 'out_channels': 512, 'kernel_size': 1, 'stride': 1})
+        layer_config_list.append({'type': 'relu'})
+        ##cv4
+        layer_config_list.append({'type': 'conv', 'in_channels': 512, 'out_channels': 512, 'kernel_size': 1, 'stride': 1})
+        layer_config_list.append({'type': 'relu'})
+
+        layer_config_list.append({'type': 'conv', 'in_channels': 512, 'out_channels': 1 +num_classes +4, 'kernel_size': 1, 'stride': 1})
+     
     else:
         assert 0, f'not support {cate}'
     for i in range(len(layer_config_list)):
