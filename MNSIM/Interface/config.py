@@ -5,9 +5,10 @@ this_path = os.path.dirname(os.path.realpath(__file__))
 
 cfg = edict()
 
-cfg.MODE = 'FIX_TRAIN'
+#cfg.MODE = 'FIX_TRAIN'
+cfg.MODE = 'TRADITION'
 
-cfg.TRAIN_BATCH_SIZE = 32
+cfg.TRAIN_BATCH_SIZE = 64
 cfg.TRAIN_NUM_WORKERS =5
 cfg.TEST_BATCH_SIZE = 64
 cfg.TEST_NUM_WORKERS = 5
@@ -22,6 +23,6 @@ cfg.train = edict()
 cfg.train.MOMENTUM = 0.9
 cfg.train.WEIGHT_DECAY = 0.0005
 cfg.train.GAMMA = 0.01
-cfg.train.lr = 0.0001
+cfg.train.lr = 0.001
 cfg.train.MILESTONES = [30, 60]
-cfg.train.EPOCHS = 90
+cfg.train.EPOCHS = 2000

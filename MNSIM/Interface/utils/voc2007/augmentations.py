@@ -234,12 +234,13 @@ class RandomSampleCrop(object):
             # randomly sample a patch
             (None, None),
         )
+        self.sample_options = np.array(self.sample_options , dtype="object")
 
     def __call__(self, image, boxes=None, labels=None):
         height, width, _ = image.shape
         while True:
             # randomly choose a mode
-            mode = random.choice(self.sample_options)
+            mode = random.choice(self.sample_options  )
             if mode is None:
                 return image, boxes, labels
 

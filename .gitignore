@@ -21,5 +21,3 @@ __pycache__/
 /MNSIM/Interface/nohup.out
 /MNSIM/Interface/train_module/runs/
 /MNSIM/Interface/data/
-/MNSIM/Interface/module_test.py
-/MNSIM/Interface/val.0

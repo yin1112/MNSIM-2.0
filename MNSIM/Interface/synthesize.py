@@ -6,10 +6,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__) , "../.."))
 
 import argparse
 from importlib import import_module
-
+from config import cfg
 import torch
 
-
+from model.yolo import myNet
 parser = argparse.ArgumentParser()
 parser.add_argument('-g', '--gpu', help = 'select gpu')
 parser.add_argument('-d', '--dataset', help = 'select dataset')
@@ -48,14 +48,21 @@ else:
     assert 0, f'unknown dataset'
 
 net = net_module.get_net(cate = args.net, num_classes = num_classes)
+
 # train
 train_module = import_module(f'train_module.{args.train}')
 device = torch.device(f'cuda:{args.gpu}' if torch.cuda.is_available() else 'cpu')
 print(f'run on device {device}')
 # weights
+
+# if args.net =='yolo':
+#     model = myNet(net, device, input_size=cfg.voc.TRAIN_SIZE, num_classes=cfg.voc.num_classes, trainable=True)
+#     net = model.to(device).train()
+# net = net.to(device).train()
+
 if args.weight is not None:
-    print(f'load weights, {args.weight}')
-    net.load_change_weights(torch.load(args.weight, map_location=device))
+    print(f'load weights, zoo/{args.weight}')
+    net.load_state_dict(torch.load(f'zoo/{args.weight}', map_location=device))
     # net.load_state_dict(torch.load(args.weight))
 if args.mode == 'train':
     train_module.train_net(net, train_loader, test_loader, device, args.prefix)

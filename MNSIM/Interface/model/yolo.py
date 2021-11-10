@@ -9,7 +9,7 @@ from utils.voc2007.tools import loss
 import os
 
 print(os.getcwd())
-from MNSIM.Interface.network import get_net
+from network import get_net
 
 
 class myNet(nn.Module):
