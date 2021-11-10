@@ -55,10 +55,6 @@ device = torch.device(f'cuda:{args.gpu}' if torch.cuda.is_available() else 'cpu'
 print(f'run on device {device}')
 # weights
 
-# if args.net =='yolo':
-#     model = myNet(net, device, input_size=cfg.voc.TRAIN_SIZE, num_classes=cfg.voc.num_classes, trainable=True)
-#     net = model.to(device).train()
-# net = net.to(device).train()
 
 if args.weight is not None:
     print(f'load weights, zoo/{args.weight}')
